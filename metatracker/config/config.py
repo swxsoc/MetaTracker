@@ -163,7 +163,7 @@ class MetaTrackerConfiguration:
         instruments_list = [
             {
                 "instrument_id": idx + 1,
-                "description": (f"{mission_config['inst_fullnames'][idx]} ({mission_config['inst_targetnames'][idx]})"),
+                "description": f"{mission_config['inst_fullnames'][idx]} ({mission_config['inst_targetnames'][idx]})",
                 "full_name": mission_config["inst_fullnames"][idx],
                 "short_name": mission_config["inst_shortnames"][idx],
             }
