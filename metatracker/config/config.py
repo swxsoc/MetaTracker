@@ -3,7 +3,7 @@ Module for configuration of the application.
 """
 
 from itertools import combinations
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from swxsoc import config as swxsoc_config
 
@@ -79,7 +79,27 @@ class MetaTrackerConfiguration:
     file_levels: List[Dict[str, Any]]
     file_types: List[Dict[str, Any]]
 
-    def __init__(self, config: Dict[str, Any], use_swxsoc: bool = True) -> None:
+    def __init__(self, config: Optional[Dict[str, Any]], use_swxsoc: bool = True) -> None:
+        """
+        Initialize a MetaTrackerConfiguration instance.
+
+        Parameters
+        ----------
+        config : dict[str, Any] or None
+            Configuration dictionary. Required keys are ``mission_name``, ``instruments``, and
+            ``instrument_configurations``. Optional keys include ``db_host``, ``file_levels``, and
+            ``file_types``, which fall back to package defaults if not provided. Pass ``None`` or an
+            empty dict to rely entirely on ``use_swxsoc`` population.
+        use_swxsoc : bool, optional
+            If ``True`` (default), update ``config`` with values derived from the active SWxSOC
+            mission configuration before validation.
+
+        Raises
+        ------
+        ValueError
+            If ``mission_name``, ``instruments``, or ``instrument_configurations`` are absent from
+            ``config`` after any SWxSOC update.
+        """
         # Instantiate a Config if Not Provided
         if not config:
             config = {}

@@ -210,8 +210,8 @@ def populate_file_level_table(
         The ORM class for the file level table.
     """
     log.debug("Upserting File Level Table")
-    for file_level in file_levels:
-        with sql_session.begin() as session:
+    with sql_session.begin() as session:
+        for file_level in file_levels:
             existing = session.query(file_level_table).filter_by(short_name=file_level["short_name"]).first()
             if existing is None:
                 log.debug(f"Inserting new file level '{file_level['short_name']}' into File Level Table")
@@ -257,8 +257,8 @@ def populate_file_type_table(
         The ORM class for the file type table.
     """
     log.debug("Upserting File Type Table")
-    for file_type in file_types:
-        with sql_session.begin() as session:
+    with sql_session.begin() as session:
+        for file_type in file_types:
             existing = session.query(file_type_table).filter_by(short_name=file_type["short_name"]).first()
             if existing is None:
                 log.debug(f"Inserting new file type '{file_type['short_name']}' into File Type Table")
@@ -308,8 +308,8 @@ def populate_instrument_table(
         The ORM class for the instrument table.
     """
     log.debug("Upserting Instrument Table")
-    for instrument in instruments:
-        with sql_session.begin() as session:
+    with sql_session.begin() as session:
+        for instrument in instruments:
             existing = session.query(instrument_table).filter_by(instrument_id=instrument["instrument_id"]).first()
             if existing is None:
                 log.debug(
@@ -420,9 +420,9 @@ def populate_instrument_configuration_table(
         The ORM class for the instrument configuration table.
     """
     log.debug("Upserting Instrument Configuration Table")
-    for _instrument_configuration in instrument_configurations:
-        config_id = _instrument_configuration["instrument_configuration_id"]
-        with sql_session.begin() as session:
+    with sql_session.begin() as session:
+        for _instrument_configuration in instrument_configurations:
+            config_id = _instrument_configuration["instrument_configuration_id"]
             existing = (
                 session.query(instrument_configuration_table).filter_by(instrument_configuration_id=config_id).first()
             )
