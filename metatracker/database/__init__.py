@@ -18,7 +18,8 @@ def check_connection(engine: Engine) -> bool:
     :rtype: bool
     """
 
-    return bool(engine.connect())
+    with engine.connect():
+        return True
 
 
 def create_engine(db_host: str) -> Engine:
