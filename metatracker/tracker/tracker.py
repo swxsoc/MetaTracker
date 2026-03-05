@@ -226,35 +226,35 @@ class MetaTracker:
         int
             The ``science_product_id`` of the inserted or existing record.
         """
-        sess = session()
 
-        # Check if science product exists with same instrument configuration id, mode, and reference timestamp
-        science_product = (
-            sess.query(ScienceProductTable)
-            .filter(
-                ScienceProductTable.instrument_configuration_id
-                == parsed_science_product["instrument_configuration_id"],
-                ScienceProductTable.mode == parsed_science_product["mode"],
-                ScienceProductTable.reference_timestamp == parsed_science_product["reference_timestamp"],
+        with session.begin() as sql_session:
+            # Check if science product exists with same instrument configuration id, mode, and reference timestamp
+            science_product = (
+                sql_session.query(ScienceProductTable)
+                .filter(
+                    ScienceProductTable.instrument_configuration_id
+                    == parsed_science_product["instrument_configuration_id"],
+                    ScienceProductTable.mode == parsed_science_product["mode"],
+                    ScienceProductTable.reference_timestamp == parsed_science_product["reference_timestamp"],
+                )
+                .first()
             )
-            .first()
-        )
 
-        # If science product exists, return science product id
-        if science_product:
+            # If science product exists, return science product id
+            if science_product:
+                return science_product.science_product_id  # type: ignore[return-value]
+
+            # If science product doesn't exist, add it to the database
+            science_product = ScienceProductTable(
+                instrument_configuration_id=parsed_science_product["instrument_configuration_id"],
+                mode=parsed_science_product["mode"],
+                reference_timestamp=parsed_science_product["reference_timestamp"],
+            )
+            sql_session.add(science_product)
+            sql_session.flush()
+
+            # return science product id that was just added
             return science_product.science_product_id  # type: ignore[return-value]
-
-        # If science product doesn't exist, add it to the database
-        science_product = ScienceProductTable(
-            instrument_configuration_id=parsed_science_product["instrument_configuration_id"],
-            mode=parsed_science_product["mode"],
-            reference_timestamp=parsed_science_product["reference_timestamp"],
-        )
-        sess.add(science_product)
-        sess.commit()
-
-        # return science product id that was just added
-        return science_product.science_product_id  # type: ignore[return-value]
 
     @db_retry
     def add_to_status_table(
