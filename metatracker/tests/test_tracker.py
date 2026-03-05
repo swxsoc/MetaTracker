@@ -14,7 +14,6 @@ from metatracker.tracker import tracker
 TEST_DB_HOST = "sqlite://"
 TEST_RANDOM_FILENAME = _test_files_directory / "ducks.txt"
 TEST_SCIENCE_FILENAME = _test_files_directory / "padreMDA0_250403185914.dat"
-TEST_SCIENCE_FILENAME = _test_files_directory / "padreMDA0_250403185914.dat"
 TEST_BAD_SCIENCE_FILENAME = _test_files_directory / "hermes_NEM_2l_2022259-030002_v01.bin"
 TEST_NON_EXISTING_SCIENCE_FILENAME = _test_files_directory / "hermes_NEM_l0_2022259-030002_v01.bop"
 
@@ -150,10 +149,6 @@ def test_tracker_parse_file() -> None:
 
     # Science File Parser
     science_file_parser = util.parse_science_filename
-    import swxsoc  # type: ignore
-
-    print(swxsoc.config["mission"]["mission_name"])
-
     test_tracker = tracker.MetaTracker(engine=engine, science_file_parser=science_file_parser)
 
     s3_key = "s3://padre/test_file/padreMDA0_250403185914.dat"
@@ -331,7 +326,6 @@ def test_get_instruments() -> None:
     instruments = test_tracker.get_instruments(session=session)
 
     assert instruments is not None
-    print(instruments)
     assert len(instruments) == 3
 
 
