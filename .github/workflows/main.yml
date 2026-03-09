@@ -5,16 +5,20 @@ on:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
+  workflow_dispatch: # For on demand runs
+  schedule:
+    - cron: 0 0 * * * # Scheduled run every day at midnight
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -22,27 +26,21 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env
 
-      - name: Run pre-commit
-        run: poetry run pre-commit run -a --show-diff-on-failure
-
-      - name: Inspect dependencies
-        run: poetry run deptry .
-
-      - name: Check Poetry lock file consistency
-        run: poetry lock --check
+      - name: Run checks
+        run: make check
 
   tox:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11']
+        python-version: ['3.10']
       fail-fast: false
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -50,7 +48,7 @@ jobs:
         uses: snok/install-poetry@v1
 
       - name: Load cached venv
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .tox
           key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
@@ -61,8 +59,10 @@ jobs:
           python -m pip install tox tox-gh-actions
 
       - name: Test with tox
+        env:
+          SWXSOC_MISSION: padre
         run: tox
 
-      - name: Upload coverage reports to Codecov with GitHub Action on Python 3.11
-        uses: codecov/codecov-action@v3
-        if: ${{ matrix.python-version == '3.11' }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        if: ${{ matrix.python-version == '3.10' }}

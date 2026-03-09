@@ -15,7 +15,7 @@ from metatracker.database.tables import (
 MISSION_NAME = CONFIGURATION.mission_name
 
 
-def test_get_tables():
+def test_get_tables() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
 
@@ -23,7 +23,7 @@ def test_get_tables():
     Base = declarative_base()
 
     # Create dummy table class
-    class TestTable(Base):
+    class TestTable(Base):  # type: ignore[misc, valid-type]
         __tablename__ = "test_table"
         test_id = Column(Integer, primary_key=True)
 
@@ -36,7 +36,7 @@ def test_get_tables():
     assert "test_table" in tables
 
 
-def test_get_columns():
+def test_get_columns() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
 
@@ -44,7 +44,7 @@ def test_get_columns():
     Base = declarative_base()
 
     # Create dummy table class
-    class TestTable(Base):
+    class TestTable(Base):  # type: ignore[misc, valid-type]
         __tablename__ = "test_table"
         test_id = Column(Integer, primary_key=True)
 
@@ -59,7 +59,7 @@ def test_get_columns():
         assert column["primary_key"] == 1
 
 
-def test_create_table():
+def test_create_table() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
 
@@ -67,7 +67,7 @@ def test_create_table():
     Base = declarative_base()
 
     # Create dummy table class
-    class TestTable(Base):
+    class TestTable(Base):  # type: ignore[misc, valid-type]
         __tablename__ = "test_table"
         test_id = Column(Integer, primary_key=True)
 
@@ -80,7 +80,7 @@ def test_create_table():
     assert "test_table" in created_tables
 
 
-def test_table_exists():
+def test_table_exists() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
 
@@ -88,7 +88,7 @@ def test_table_exists():
     Base = declarative_base()
 
     # Create dummy table class
-    class TestTable(Base):
+    class TestTable(Base):  # type: ignore[misc, valid-type]
         __tablename__ = "test_table"
         test_id = Column(Integer, primary_key=True)
 
@@ -101,7 +101,7 @@ def test_table_exists():
     assert "test_table" in created_tables
 
 
-def test_create_tables():
+def test_create_tables() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
     create_session(engine)
@@ -132,7 +132,7 @@ def test_create_tables():
     assert created_tables == table_names
 
 
-def test_create_tables_existing():
+def test_create_tables_existing() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
     create_session(engine)
@@ -166,7 +166,7 @@ def test_create_tables_existing():
     create_tables(engine=engine)
 
 
-def test_remove_tables():
+def test_remove_tables() -> None:
     # Create engine and session
     engine = create_engine("sqlite://")
 

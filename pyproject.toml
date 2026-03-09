@@ -2,9 +2,11 @@
 name = "metatracker"
 version = "0.1.0"
 description = "This is a python package that helps keep track of both Raw Binary and CDF Files in a Relational Database."
-authors = ["Damian Barrous-Dume <fdamianbarrous@gmail.com>"]
-repository = "https://github.com/dbarrous/MetaTracker"
-documentation = "https://dbarrous.github.io/MetaTracker/"
+authors = [
+    "Damian Barrous-Dume <fdamianbarrous@gmail.com>",
+    "Andrew Robbertz <a.robbertz@gmail.com>"
+]
+repository = "https://github.com/swxsoc/MetaTracker"
 readme = "README.md"
 license = "Apache 2.0"
 packages = [
@@ -12,23 +14,22 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
+python = ">=3.10"
 sqlalchemy = ">=2.0.0,<3.0.0"
 tenacity = "9.1.2"
+swxsoc = { git = "https://github.com/swxsoc/swxsoc.git", branch = "main" }
 
 
 [tool.poetry.group.dev.dependencies]
 coverage = ">=5.5"
 pytest = ">=7.2.0"
 pytest-cov = ">=4.0.0"
-deptry = "^0.6.4"
+deptry = "^0.20.0"
 mypy = ">=0.981"
 pre-commit = "^2.20.0"
 tox = ">=3.25.1"
-swxsoc = { git = "https://github.com/swxsoc/swxsoc.git", branch = "main" }
-black = "^22.8.0"
-ruff = "^0.0.23"
-
+black = ">=24.10.0"
+ruff = ">=0.8.0"
 
 
 [build-system]
@@ -37,7 +38,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 120
-target-version = ['py37']
+target-version = ['py310']
 preview = true
 
 [tool.mypy]
@@ -51,7 +52,7 @@ warn_unused_ignores = "True"
 show_error_codes = "True"
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py310"
 line-length = 120
 fix = true
 select = [
@@ -95,6 +96,9 @@ ignore = [
 
 [tool.ruff.per-file-ignores]
 "tests/*" = ["S101"]
+
+[tool.deptry.per_rule_ignores]
+DEP004 = ["pytest"]
 
 [tool.coverage.report]
 skip_empty = true

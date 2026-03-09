@@ -16,6 +16,7 @@
 
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -25,7 +26,7 @@ from metatracker import CONFIGURATION
 from . import base_table as Base
 
 
-class ScienceFileTable(Base.Base):
+class ScienceFileTable(Base.Base):  # type: ignore
     # Name Of Table
     __tablename__ = f"{CONFIGURATION.mission_name}_science_file"
 
@@ -78,7 +79,7 @@ class ScienceFileTable(Base.Base):
         filename: str,
         s3_key: str,
         s3_bucket: str,
-        file_version: int,
+        file_version: str,
         file_size: int,
         file_extension: str,
         file_path: str,
@@ -88,25 +89,25 @@ class ScienceFileTable(Base.Base):
         """
         Constructor for Science File Table
         """
-        self.science_product_id = science_product_id
-        self.file_type = file_type
-        self.file_level = file_level
-        self.filename = filename
-        self.file_version = file_version
-        self.file_size = file_size
-        self.file_extension = file_extension
-        self.file_path = file_path
-        self.s3_key = s3_key
-        self.s3_bucket = s3_bucket
-        self.file_size = file_size
-        self.file_modified_timestamp = file_modified_timestamp
-        self.is_public = is_public
+        self.science_product_id = science_product_id  # type: ignore[assignment]
+        self.file_type = file_type  # type: ignore[assignment]
+        self.file_level = file_level  # type: ignore[assignment]
+        self.filename = filename  # type: ignore[assignment]
+        self.file_version = file_version  # type: ignore[assignment]
+        self.file_size = file_size  # type: ignore[assignment]
+        self.file_extension = file_extension  # type: ignore[assignment]
+        self.file_path = file_path  # type: ignore[assignment]
+        self.s3_key = s3_key  # type: ignore[assignment]
+        self.s3_bucket = s3_bucket  # type: ignore[assignment]
+        self.file_size = file_size  # type: ignore[assignment]
+        self.file_modified_timestamp = file_modified_timestamp  # type: ignore[assignment]
+        self.is_public = is_public  # type: ignore[assignment]
 
     def __repr__(self) -> str:
-        return super().__repr__()
+        return super().__repr__()  # type: ignore[no-any-return]
 
 
-def return_class() -> type:
+def return_class() -> Any:
     """
     Return Class
     """

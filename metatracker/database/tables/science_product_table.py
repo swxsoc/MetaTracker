@@ -6,6 +6,7 @@
 #   reference_timestamp: datetime
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -15,7 +16,7 @@ from metatracker import CONFIGURATION
 from . import base_table as Base
 
 
-class ScienceProductTable(Base.Base):
+class ScienceProductTable(Base.Base):  # type: ignore
     __tablename__ = f"{CONFIGURATION.mission_name}_science_product"
 
     # ID Of Science Product (Primary Key)
@@ -38,15 +39,15 @@ class ScienceProductTable(Base.Base):
         """
         Constructor for Science Product Table
         """
-        self.instrument_configuration_id = instrument_configuration_id
-        self.mode = mode
-        self.reference_timestamp = reference_timestamp
+        self.instrument_configuration_id = instrument_configuration_id  # type: ignore[assignment]
+        self.mode = mode  # type: ignore[assignment]
+        self.reference_timestamp = reference_timestamp  # type: ignore[assignment]
 
     def __repr__(self) -> str:
-        return super().__repr__()
+        return super().__repr__()  # type: ignore[no-any-return]
 
 
-def return_class() -> type:
+def return_class() -> Any:
     """
     Return Class
     """

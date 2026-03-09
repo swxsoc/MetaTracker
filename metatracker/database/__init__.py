@@ -3,31 +3,33 @@ Module to handle database operations
 """
 
 from sqlalchemy import create_engine as sqlalchemy_create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, sessionmaker
 
 
 # Function to check if you can connect to the database with SQLAlchemy
-def check_connection(engine: type) -> bool:
+def check_connection(engine: Engine) -> bool:
     """
     Check Connection
 
     :param engine: SQLAlchemy Engine
-    :type engine: type
+    :type engine: Engine
     :return: Connection Status
     :rtype: bool
     """
 
-    return bool(engine.connect())
+    with engine.connect():
+        return True
 
 
-def create_engine(db_host: str) -> type:
+def create_engine(db_host: str) -> Engine:
     """
     Create Engine
 
     :param db_host: Database Host
     :type db_host: str
     :return: SQLAlchemy Engine
-    :rtype: type
+    :rtype: Engine
     """
 
     engine = sqlalchemy_create_engine(db_host)
@@ -35,18 +37,15 @@ def create_engine(db_host: str) -> type:
 
 
 # Function to create a database session
-def create_session(engine: type) -> type:
+def create_session(engine: Engine) -> sessionmaker[Session]:
     """
     Create Session
 
     :param engine: SQLAlchemy Engine
-    :type engine: type
+    :type engine: Engine
     :return: SQLAlchemy Session
-    :rtype: type
+    :rtype: sessionmaker[Session]
     """
 
     session = sessionmaker(bind=engine)
     return session
-
-
-# Function to create a database

@@ -2,7 +2,14 @@
 Setup Tables
 """
 
-from sqlalchemy import inspect
+import re
+from types import ModuleType
+from typing import Any
+
+from sqlalchemy import inspect, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.sql.schema import Table
 
 from metatracker import CONFIGURATION, log
 from metatracker.database import create_session
@@ -14,17 +21,21 @@ from . import instrument_table as InstrumentTable
 from . import science_file_table as ScienceFileTable
 from . import science_product_table as ScienceProductTable
 from . import status_table as StatusTable
-from metatracker.database.tables.status_table import status_origin_association
 
 
 def get_class_name(class_object: type) -> str:
     """
-    Get Class Name
+    Get the name of a class.
 
-    :param class_object: Class Object
-    :type class_object: type
-    :return: Class Name
-    :rtype: str
+    Parameters
+    ----------
+    class_object : type
+        The class to get the name of.
+
+    Returns
+    -------
+    str
+        The name of the class.
     """
 
     class_name = class_object.__name__
@@ -32,12 +43,14 @@ def get_class_name(class_object: type) -> str:
     return class_name
 
 
-def get_table_modules() -> list:
+def get_table_modules() -> list[ModuleType]:
     """
-    Get Table Modules
+    Get all table modules.
 
-    :return: List of Table Modules
-    :rtype: list
+    Returns
+    -------
+    list[ModuleType]
+        List of table modules.
     """
 
     modules = [
@@ -53,12 +66,19 @@ def get_table_modules() -> list:
     return modules
 
 
-def get_table_classes(table_modules: list) -> list:
+def get_table_classes(table_modules: list[ModuleType]) -> list[Any]:
     """
-    Get Table Classes
+    Get ORM table classes from their containing modules.
 
-    :return: List of Table Classes
-    :rtype: list
+    Parameters
+    ----------
+    table_modules : list[ModuleType]
+        List of table modules, each expected to have a ``return_class()`` function.
+
+    Returns
+    -------
+    list[Any]
+        List of ORM table classes.
     """
 
     table_classes = [module.return_class() for module in table_modules]
@@ -66,29 +86,39 @@ def get_table_classes(table_modules: list) -> list:
     return table_classes
 
 
-def get_table_from_class(table_class: type) -> type:
+def get_table_from_class(table_class: Any) -> Table:
     """
-    Get Table
+    Get the SQLAlchemy ``Table`` object from an ORM table class.
 
-    :param table_class: Table Class
-    :type table_class: type
-    :return: Table
-    :rtype: type
+    Parameters
+    ----------
+    table_class : type
+        An ORM table class with a ``__table__`` attribute.
+
+    Returns
+    -------
+    Table
+        The underlying SQLAlchemy ``Table`` object.
     """
 
     table = table_class.__table__
 
-    return table
+    return table  # type: ignore[no-any-return]
 
 
-def get_tables_from_classes(table_classes: list) -> list:
+def get_tables_from_classes(table_classes: list[Any]) -> list[Table]:
     """
-    Get Tables from Table Classes
+    Get SQLAlchemy ``Table`` objects from a list of ORM table classes.
 
-    :param table_classes: List of Table Classes
-    :type table_classes: list
-    :return: List of Tables
-    :rtype: list
+    Parameters
+    ----------
+    table_classes : list[type]
+        List of ORM table classes.
+
+    Returns
+    -------
+    list[Table]
+        List of SQLAlchemy ``Table`` objects.
     """
 
     tables = [get_table_from_class(table_class) for table_class in table_classes]
@@ -96,32 +126,40 @@ def get_tables_from_classes(table_classes: list) -> list:
     return tables
 
 
-# Function to return all the tables in the database
-def get_tables(engine: type) -> list:
+def get_tables(engine: Engine) -> list[str]:
     """
-    Get Tables in Database
+    Get all table names in the database.
 
-    :param engine: SQLAlchemy Engine
-    :type engine: type
-    :return: List of Tables
-    :rtype: list
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
+
+    Returns
+    -------
+    list[str]
+        List of table names in the database.
     """
     inspector = inspect(engine)
 
     return inspector.get_table_names()
 
 
-# Function to check if a table exists in the database
-def table_exists(engine: type, table_name: str) -> bool:
+def table_exists(engine: Engine, table_name: str) -> bool:
     """
-    Check if Table Exists in Database
+    Check if a table exists in the database.
 
-    :param engine: SQLAlchemy Engine
-    :type engine: type
-    :param table_name: Table Name
-    :type table_name: str
-    :return: Table Exists
-    :rtype: bool
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
+    table_name : str
+        Name of the table to check for.
+
+    Returns
+    -------
+    bool
+        ``True`` if the table exists, ``False`` otherwise.
     """
     inspector = inspect(engine)
 
@@ -130,42 +168,54 @@ def table_exists(engine: type, table_name: str) -> bool:
     return table_name in tables
 
 
-# Function to get all columns in a table
-def get_columns(engine: type, table_name: str) -> list:
+def get_columns(engine: Engine, table_name: str) -> list[dict[str, Any]]:
     """
-    Get Columns in Table in Database
+    Get all columns in a table.
 
-    :param engine: SQLAlchemy Engine
-    :type engine: type
-    :param table_name: Table Name
-    :type table_name: str
-    :return: List of Columns
-    :rtype: list
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
+    table_name : str
+        Name of the table to get columns for.
+
+    Returns
+    -------
+    list[dict[str, Any]]
+        List of column metadata dictionaries.
     """
 
     inspector = inspect(engine)
 
-    return inspector.get_columns(table_name)
+    return inspector.get_columns(table_name)  # type: ignore[return-value]
 
 
-def populate_file_level_table(sql_session: type, file_levels: list, file_level_table: type) -> None:
+def populate_file_level_table(
+    sql_session: sessionmaker[Session], file_levels: list[dict[str, Any]], file_level_table: Any
+) -> None:
     """
-    Populate File Level Table
+    Upsert the file level table with the configured file levels.
 
-    :param sql_session: SQLAlchemy Session
-    :type sql_session: sqlalchemy.orm.session.Session
-    :param file_levels: List of file levels
-    :type file_levels: list
-    :param file_level_table: File Level Table
-    :type file_level_table: sqlalchemy.ext.declarative.api.DeclarativeMeta
-    :return: None
-    :rtype: None
+    Inserts new file levels and updates metadata (``full_name``, ``description``)
+    on existing rows. Rows present in the database but absent from *file_levels*
+    are left in place for foreign-key integrity.
+
+    Parameters
+    ----------
+    sql_session : sessionmaker[Session]
+        SQLAlchemy session factory.
+    file_levels : list[dict[str, Any]]
+        List of file level dictionaries, each containing ``short_name``,
+        ``full_name``, and ``description`` keys.
+    file_level_table : type
+        The ORM class for the file level table.
     """
-    log.debug("Populating File Level Table")
-    for file_level in file_levels:
-        with sql_session.begin() as session:
-            if session.query(file_level_table).filter_by(short_name=file_level["short_name"]).first() is None:
-                log.debug(f"Adding {file_level['short_name']} to File Level Table")
+    log.debug("Upserting File Level Table")
+    with sql_session.begin() as session:
+        for file_level in file_levels:
+            existing = session.query(file_level_table).filter_by(short_name=file_level["short_name"]).first()
+            if existing is None:
+                log.debug(f"Inserting new file level '{file_level['short_name']}' into File Level Table")
                 session.add(
                     file_level_table(
                         full_name=file_level["full_name"],
@@ -174,29 +224,47 @@ def populate_file_level_table(sql_session: type, file_levels: list, file_level_t
                     )
                 )
             else:
-                log.debug(f"{file_level['short_name']} already exists in File Level Table")
+                updated_fields: list[str] = []
+                if existing.full_name != file_level["full_name"]:
+                    existing.full_name = file_level["full_name"]
+                    updated_fields.append("full_name")
+                if existing.description != file_level["description"]:
+                    existing.description = file_level["description"]
+                    updated_fields.append("description")
+                if updated_fields:
+                    log.debug(f"Updated file level '{file_level['short_name']}' fields: {', '.join(updated_fields)}")
+                else:
+                    log.debug(f"File level '{file_level['short_name']}' is up to date, no changes needed")
 
 
-def populate_file_type_table(sql_session: type, file_types: list, file_level_table: type) -> None:
+def populate_file_type_table(
+    sql_session: sessionmaker[Session], file_types: list[dict[str, Any]], file_type_table: Any
+) -> None:
     """
-    Populate File Type Table
+    Upsert the file type table with the configured file types.
 
-    :param sql_session: SQLAlchemy Session
-    :type sql_session: sqlalchemy.orm.session.Session
-    :param file_types: List of file types
-    :type file_types: list
-    :param file_level_table: File Level Table
-    :type file_level_table: sqlalchemy.ext.declarative.api.DeclarativeMeta
-    :return: None
-    :rtype: None
+    Inserts new file types and updates metadata (``full_name``, ``description``,
+    ``extension``) on existing rows. Rows present in the database but absent
+    from *file_types* are left in place for foreign-key integrity.
+
+    Parameters
+    ----------
+    sql_session : sessionmaker[Session]
+        SQLAlchemy session factory.
+    file_types : list[dict[str, Any]]
+        List of file type dictionaries, each containing ``short_name``,
+        ``full_name``, ``description``, and ``extension`` keys.
+    file_type_table : type
+        The ORM class for the file type table.
     """
-    log.debug("Populating File Type Table")
-    for file_type in file_types:
-        with sql_session.begin() as session:
-            if session.query(file_level_table).filter_by(short_name=file_type["short_name"]).first() is None:
-                log.debug(f"Adding {file_type['short_name']} to File Type Table")
+    log.debug("Upserting File Type Table")
+    with sql_session.begin() as session:
+        for file_type in file_types:
+            existing = session.query(file_type_table).filter_by(short_name=file_type["short_name"]).first()
+            if existing is None:
+                log.debug(f"Inserting new file type '{file_type['short_name']}' into File Type Table")
                 session.add(
-                    file_level_table(
+                    file_type_table(
                         short_name=file_type["short_name"],
                         full_name=file_type["full_name"],
                         description=file_type["description"],
@@ -204,27 +272,51 @@ def populate_file_type_table(sql_session: type, file_types: list, file_level_tab
                     )
                 )
             else:
-                log.debug(f"{file_type['short_name']} already exists in File Type Table")
+                updated_fields: list[str] = []
+                if existing.full_name != file_type["full_name"]:
+                    existing.full_name = file_type["full_name"]
+                    updated_fields.append("full_name")
+                if existing.description != file_type["description"]:
+                    existing.description = file_type["description"]
+                    updated_fields.append("description")
+                if existing.extension != file_type["extension"]:
+                    existing.extension = file_type["extension"]
+                    updated_fields.append("extension")
+                if updated_fields:
+                    log.debug(f"Updated file type '{file_type['short_name']}' fields: {', '.join(updated_fields)}")
+                else:
+                    log.debug(f"File type '{file_type['short_name']}' is up to date, no changes needed")
 
 
-def populate_instrument_table(sql_session: type, instruments: list, instrument_table: type) -> None:
+def populate_instrument_table(
+    sql_session: sessionmaker[Session], instruments: list[dict[str, Any]], instrument_table: Any
+) -> None:
     """
-    Populate Instrument Table
+    Upsert the instrument table with the configured instruments.
 
-    :param sql_session: SQLAlchemy Session
-    :type sql_session: sqlalchemy.orm.session.Session
-    :param instruments: List of instruments
-    :type instruments: list
-    :param instrument_table: Instrument Table
-    :type instrument_table: sqlalchemy.ext.declarative.api.DeclarativeMeta
-    :return: None
-    :rtype: None
+    Inserts new instruments and updates metadata (``short_name``, ``full_name``,
+    ``description``) on existing rows. Rows present in the database but absent
+    from *instruments* are left in place for foreign-key integrity.
+
+    Parameters
+    ----------
+    sql_session : sessionmaker[Session]
+        SQLAlchemy session factory.
+    instruments : list[dict[str, Any]]
+        List of instrument dictionaries, each containing ``instrument_id``,
+        ``short_name``, ``full_name``, and ``description`` keys.
+    instrument_table : type
+        The ORM class for the instrument table.
     """
-    log.debug("Populating Instrument Table")
-    for instrument in instruments:
-        with sql_session.begin() as session:
-            if session.query(instrument_table).filter_by(short_name=instrument["short_name"]).first() is None:
-                log.debug(f"Adding {instrument['short_name']} to Instrument Table")
+    log.debug("Upserting Instrument Table")
+    with sql_session.begin() as session:
+        for instrument in instruments:
+            existing = session.query(instrument_table).filter_by(instrument_id=instrument["instrument_id"]).first()
+            if existing is None:
+                log.debug(
+                    f"Inserting new instrument '{instrument['short_name']}'"
+                    f" (id={instrument['instrument_id']}) into Instrument Table"
+                )
                 session.add(
                     instrument_table(
                         instrument_id=instrument["instrument_id"],
@@ -234,58 +326,160 @@ def populate_instrument_table(sql_session: type, instruments: list, instrument_t
                     )
                 )
             else:
-                log.debug(f"{instrument['short_name']} already exists in Instrument Table")
+                updated_fields: list[str] = []
+                if existing.short_name != instrument["short_name"]:
+                    existing.short_name = instrument["short_name"]
+                    updated_fields.append("short_name")
+                if existing.full_name != instrument["full_name"]:
+                    existing.full_name = instrument["full_name"]
+                    updated_fields.append("full_name")
+                if existing.description != instrument["description"]:
+                    existing.description = instrument["description"]
+                    updated_fields.append("description")
+                if updated_fields:
+                    log.debug(
+                        f"Updated instrument '{instrument['short_name']}'"
+                        f" (id={instrument['instrument_id']}) fields: {', '.join(updated_fields)}"
+                    )
+                else:
+                    log.debug(
+                        f"Instrument '{instrument['short_name']}'"
+                        f" (id={instrument['instrument_id']}) is up to date, no changes needed"
+                    )
+
+
+def sync_instrument_configuration_schema(engine: Engine) -> None:
+    """
+    Synchronise the physical instrument-configuration table schema with the ORM.
+
+    When new instruments are added to the configuration, the ORM class (built
+    dynamically at import time) will have ``instrument_N_id`` columns that do
+    not yet exist in the physical database table.  This function detects those
+    missing columns and issues ``ALTER TABLE … ADD COLUMN`` DDL to bring the
+    schema in line with the ORM definition.
+
+    All identifiers are quoted via the engine dialect's identifier preparer,
+    and every missing column name is validated against the expected
+    ``instrument_\\d+_id`` pattern before any DDL is executed.
+
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
+
+    Raises
+    ------
+    ValueError
+        If a missing column name does not match the ``instrument_N_id``
+        naming convention.  No DDL is executed in this case.
+    """
+    ic_table_class = InstrumentConfigurationTable.return_class()
+    table_name = ic_table_class.__table__.name
+
+    if not table_exists(engine, table_name):
+        log.debug(f"Table '{table_name}' does not exist yet; schema sync skipped (will be created by create_all)")
+        return
+
+    # Determine which columns the ORM expects vs. what the DB has
+    db_columns = {col["name"] for col in get_columns(engine, table_name)}
+    orm_columns = {col.name for col in ic_table_class.__table__.columns}
+    missing_columns = orm_columns - db_columns
+
+    if not missing_columns:
+        log.debug(f"Instrument configuration table '{table_name}' schema is up to date")
+        return
+
+    log.debug(
+        f"Instrument configuration table '{table_name}' is missing columns: {sorted(missing_columns)}."
+        " Issuing ALTER TABLE statements."
+    )
+
+    # Validate that every missing column matches the expected naming pattern
+    _INSTRUMENT_COL_RE = re.compile(r"^instrument_\d+_id$")
+    for col_name in missing_columns:
+        if not _INSTRUMENT_COL_RE.match(col_name):
+            raise ValueError(
+                f"Unexpected column name '{col_name}' does not match the expected "
+                f"'instrument_N_id' pattern. Refusing to issue DDL."
+            )
+
+    # Use the dialect's identifier preparer to safely quote all identifiers
+    preparer = engine.dialect.identifier_preparer
+    instrument_table_name = InstrumentTable.return_class().__table__.name
+    quoted_table = preparer.quote_identifier(table_name)
+    quoted_instrument_table = preparer.quote_identifier(instrument_table_name)
+
+    with engine.connect() as connection:
+        for col_name in sorted(missing_columns):
+            quoted_col = preparer.quote_identifier(col_name)
+            # All instrument_N_id columns are nullable Integer FKs
+            ddl = (
+                f"ALTER TABLE {quoted_table} ADD COLUMN {quoted_col} INTEGER"
+                f" REFERENCES {quoted_instrument_table}({preparer.quote_identifier('instrument_id')})"
+            )
+            log.debug(f"Executing DDL: {ddl}")
+            connection.execute(text(ddl))
+        connection.commit()
+    log.debug(f"Schema sync complete for '{table_name}'")
 
 
 def populate_instrument_configuration_table(
-    sql_session: type, instrument_configurations: list, instrument_configuration_table: type
+    sql_session: sessionmaker[Session],
+    instrument_configurations: list[dict[str, Any]],
+    instrument_configuration_table: Any,
 ) -> None:
     """
-    Populate Instrument Configuration Table
+    Upsert the instrument configuration table with all configured instrument combinations.
 
-    :param sql_session: SQLAlchemy Session
-    :type sql_session: sqlalchemy.orm.session.Session
-    :param instrument_configurations: List of instrument configurations
-    :type instrument_configurations: list
-    :param instrument_configuration_table: Instrument Configuration Table
-    :type instrument_configuration_table: sqlalchemy.ext.declarative.api.DeclarativeMeta
-    :return: None
-    :rtype: None
+    Inserts new configuration rows and updates the ``instrument_N_id`` foreign-key
+    values on existing rows.  Rows present in the database but absent from
+    *instrument_configurations* are left in place for foreign-key integrity.
+
+    Parameters
+    ----------
+    sql_session : sessionmaker[Session]
+        SQLAlchemy session factory.
+    instrument_configurations : list[dict[str, Any]]
+        List of instrument configuration dictionaries, each containing
+        ``instrument_configuration_id`` and ``instrument_N_id`` keys.
+    instrument_configuration_table : type
+        The ORM class for the instrument configuration table.
     """
-    log.debug("Populating Instrument Configuration Table")
-    for _instrument_configuration in instrument_configurations:
-        with sql_session.begin() as session:
-            # Check if the id exists in the Instrument Configuration Table
-            if (
-                session.query(instrument_configuration_table)
-                .filter_by(instrument_configuration_id=_instrument_configuration["instrument_configuration_id"])
-                .first()
-                is None
-            ):
-                log.debug(
-                    f"Adding {_instrument_configuration['instrument_configuration_id']} to Instrument Configuration"
-                    " Table"
-                )
+    log.debug("Upserting Instrument Configuration Table")
+    with sql_session.begin() as session:
+        for _instrument_configuration in instrument_configurations:
+            config_id = _instrument_configuration["instrument_configuration_id"]
+            existing = (
+                session.query(instrument_configuration_table).filter_by(instrument_configuration_id=config_id).first()
+            )
+            if existing is None:
+                log.debug(f"Inserting new instrument configuration (id={config_id})")
                 session.add(instrument_configuration_table(**_instrument_configuration))
-
             else:
-                log.debug(
-                    f"Configuration with ID {_instrument_configuration['instrument_configuration_id']} already exists"
-                    " in Instrument Configuration Table"
-                )
+                # Update any instrument_N_id fields that differ
+                updated_fields: list[str] = []
+                for key, value in _instrument_configuration.items():
+                    if key == "instrument_configuration_id":
+                        continue
+                    if getattr(existing, key, None) != value:
+                        setattr(existing, key, value)
+                        updated_fields.append(key)
+                if updated_fields:
+                    log.debug(f"Updated instrument configuration (id={config_id}) fields: {', '.join(updated_fields)}")
+                else:
+                    log.debug(f"Instrument configuration (id={config_id}) is up to date, no changes needed")
 
 
-# Function to create table if it doesn't exist and match the table class
-def create_table(engine: type, table_class: type) -> None:
+def create_table(engine: Engine, table_class: Any) -> None:
     """
-    Create table if it doesn't exist.
+    Create a table if it doesn't already exist.
 
-    :param engine: SQLAlchemy Engine
-    :type engine: sqlalchemy.engine.base.Engine
-    :param table_class: Table Class
-    :type table_class: sqlalchemy.ext.declarative.api.DeclarativeMeta
-    :return: None
-    :rtype: None
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
+    table_class : type
+        The ORM class for the table to create.
     """
     table_name = table_class.__table__.name
     if not table_exists(engine, table_name):
@@ -295,65 +489,71 @@ def create_table(engine: type, table_class: type) -> None:
         log.debug(f"Table {table_name} already exists, skipping creation.")
 
 
-def is_table_empty(sql_session, table_class: type) -> bool:
+def create_tables(engine: Engine) -> None:
     """
-    Check if a table is empty.
+    Create and upsert all database tables.
 
-    :param session: SQLAlchemy Session
-    :type session: sqlalchemy.orm.session.Session
-    :param table_class: Table Class
-    :type table_class: sqlalchemy.ext.declarative.api.DeclarativeMeta
-    :return: True if table is empty, False otherwise
-    :rtype: bool
+    This function is **idempotent** — it is safe to call repeatedly.  On the
+    first invocation it creates every table via ``Base.metadata.create_all``.
+    On subsequent calls it:
+
+    * Adds any new columns required by schema changes (e.g. new instruments
+      adding ``instrument_N_id`` columns to the instrument-configuration table).
+    * Inserts new rows for file levels, file types, instruments, and instrument
+      configurations that are present in ``CONFIGURATION`` but missing from the
+      database.
+    * Updates metadata on existing rows whose values have drifted from the
+      current configuration.
+    * Leaves rows that are no longer in the configuration untouched so that
+      existing foreign-key references remain valid.
+
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
     """
-    with sql_session.begin() as session:
-        return session.query(table_class).first() is None
+    log.debug("create_tables: starting")
 
+    # --- 1. Create all tables at once (no-op if they already exist) ---
+    from metatracker.database.tables.base_table import Base
 
-def create_tables(engine: type) -> None:
-    """
-    Set up tables in the database if they don't exist and populate them.
-
-    :param engine: SQLAlchemy Engine
-    :type engine: sqlalchemy.engine.base.Engine
-    :return: None
-    :rtype: None
-    """
-    # --- Create all tables at once, in order ---
-    from metatracker.database.tables.base_table import Base  # adjust import if needed
     Base.metadata.create_all(engine)
+    log.debug("create_tables: Base.metadata.create_all complete")
 
-    # --- Now do the population as before ---
+    # --- 2. Sync instrument configuration schema (add missing columns) ---
+    sync_instrument_configuration_schema(engine)
+
+    # --- 3. Upsert lookup / configuration tables ---
     session = create_session(engine)
 
-    table_modules = get_table_modules()
-    table_classes = get_table_classes(table_modules)
+    file_level_class = FileLevelTable.return_class()
+    file_type_class = FileTypeTable.return_class()
+    instrument_class = InstrumentTable.return_class()
+    instrument_config_class = InstrumentConfigurationTable.return_class()
 
-    for table_class in table_classes:
-        class_name = get_class_name(table_class)
-        if not is_table_empty(session, table_class):
-            log.debug(f"{class_name} already populated, skipping population.")
-            continue
+    log.debug("create_tables: upserting file level table")
+    populate_file_level_table(session, CONFIGURATION.file_levels, file_level_class)
 
-        if class_name == "FileLevelTable":
-            populate_file_level_table(session, CONFIGURATION.file_levels, table_class)
-        elif class_name == "FileTypeTable":
-            populate_file_type_table(session, CONFIGURATION.file_types, table_class)
-        elif class_name == "InstrumentTable":
-            populate_instrument_table(session, CONFIGURATION.instruments, table_class)
-        elif class_name == "InstrumentConfigurationTable":
-            populate_instrument_configuration_table(session, CONFIGURATION.instrument_configurations, table_class)
-            populate_instrument_configuration_table(session, CONFIGURATION.instrument_configurations, table_class)
+    log.debug("create_tables: upserting file type table")
+    populate_file_type_table(session, CONFIGURATION.file_types, file_type_class)
+
+    log.debug("create_tables: upserting instrument table")
+    populate_instrument_table(session, CONFIGURATION.instruments, instrument_class)
+
+    log.debug("create_tables: upserting instrument configuration table")
+    populate_instrument_configuration_table(session, CONFIGURATION.instrument_configurations, instrument_config_class)
+
+    log.debug("create_tables: complete")
 
 
-def remove_tables(engine: type) -> None:
+def remove_tables(engine: Engine) -> None:
     """
-    Remove all tables from the database
+    Remove all tables from the database.
 
-    :param engine: SQLAlchemy
-    :type engine: sqlalchemy.engine.base.Engine
-    :return: None
-    :rtype: None
+    Parameters
+    ----------
+    engine : Engine
+        SQLAlchemy engine connected to the database.
     """
     # Get Table Modules
     table_modules = get_table_modules()

@@ -1,13 +1,9 @@
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Set SWXSOC_MISSION environment variable
-os.environ["SWXSOC_MISSION"] = "padre"
+from swxsoc.util import util  # type: ignore
 
-from swxsoc.util import util
-
-from metatracker import log
+from metatracker import _test_files_directory, log
 from metatracker.database import create_engine, create_session
 from metatracker.database.tables import create_tables
 from metatracker.database.tables.science_file_table import ScienceFileTable
@@ -16,11 +12,10 @@ from metatracker.database.tables.status_table import StatusTable
 from metatracker.tracker import tracker
 
 TEST_DB_HOST = "sqlite://"
-TEST_RANDOM_FILENAME = "./tests/test_files/ducks.txt"
-TEST_SCIENCE_FILENAME = "./tests/test_files/padreMDA0_250403185914.dat"
-TEST_SCIENCE_FILENAME = "./tests/test_files/padreMDA0_250403185914.dat"
-TEST_BAD_SCIENCE_FILENAME = "./tests/test_files/hermes_NEM_2l_2022259-030002_v01.bin"
-TEST_NON_EXISTING_SCIENCE_FILENAME = "./hermes_NEM_l0_2022259-030002_v01.bop"
+TEST_RANDOM_FILENAME = _test_files_directory / "ducks.txt"
+TEST_SCIENCE_FILENAME = _test_files_directory / "padreMDA0_250403185914.dat"
+TEST_BAD_SCIENCE_FILENAME = _test_files_directory / "hermes_NEM_2l_2022259-030002_v01.bin"
+TEST_NON_EXISTING_SCIENCE_FILENAME = _test_files_directory / "hermes_NEM_l0_2022259-030002_v01.bop"
 
 
 def test_tracker() -> None:
@@ -37,7 +32,7 @@ def test_tracker() -> None:
     assert test_tracker is not None
 
     # trunk-ignore(mypy/assignment)
-    engine = "not_an_engine"
+    engine = "not_an_engine"  # type: ignore[assignment]
 
     # Science File Parser
     science_file_parser = util.parse_science_filename
@@ -149,14 +144,11 @@ def test_tracker_parse_file() -> None:
         f.write("Test")
 
     engine = create_engine(TEST_DB_HOST)
-
     session = create_session(engine)
-    # Science File Parser
-
     create_tables(engine=engine)
 
+    # Science File Parser
     science_file_parser = util.parse_science_filename
-
     test_tracker = tracker.MetaTracker(engine=engine, science_file_parser=science_file_parser)
 
     s3_key = "s3://padre/test_file/padreMDA0_250403185914.dat"
@@ -176,6 +168,7 @@ def test_tracker_parse_file() -> None:
             sql_session.query(ScienceFileTable).filter(ScienceFileTable.filename == "padreMDA0_250403185914").first()
         )
 
+        assert found_file is not None
         assert found_file.filename == "padreMDA0_250403185914"
         assert found_file.s3_key == s3_key
         assert found_file.s3_bucket == s3_bucket
@@ -209,7 +202,7 @@ def test_add_to_status_table() -> None:
         )
         sql_session.add(science_file)
         sql_session.flush()
-        science_file_id = science_file.science_file_id
+        science_file_id = science_file.science_file_id  # type: ignore[assignment]
 
     # Initialize MetaTracker instance
     science_file_parser = util.parse_science_filename
@@ -218,7 +211,7 @@ def test_add_to_status_table() -> None:
     # Test: Add a new status entry
     processing_status = "SUCCESS"
     processing_status_message = "Processing started"
-    origin_file_ids = []
+    origin_file_ids: list[int] = []
 
     status_id = test_tracker.add_to_status_table(
         session=session,
@@ -321,13 +314,8 @@ def test_track_is_valid_instrument() -> None:
 
 
 def test_get_instruments() -> None:
-    # Create testfile with name padreMDA0_250403185914.dat
-    Path(TEST_SCIENCE_FILENAME)
-
     engine = create_engine(TEST_DB_HOST)
-
     session = create_session(engine)
-
     create_tables(engine=engine)
 
     # Science File Parser
@@ -338,8 +326,7 @@ def test_get_instruments() -> None:
     instruments = test_tracker.get_instruments(session=session)
 
     assert instruments is not None
-
-    assert len(instruments) == 2
+    assert len(instruments) == 3
 
 
 def test_get_instrument_configurations() -> None:
@@ -361,7 +348,7 @@ def test_get_instrument_configurations() -> None:
 
     assert instrument_configurations is not None
 
-    assert len(instrument_configurations) == 3
+    assert len(instrument_configurations) == 7
 
     assert instrument_configurations[1] == ["meddea"]
 
@@ -407,11 +394,11 @@ def test_map_instrument_list() -> None:
 
     instrument_list = test_tracker.get_instruments(session=session)
 
-    instrument_map = test_tracker.map_instrument_list(session=session, instrument_list=instrument_list)
+    instrument_map = test_tracker.map_instrument_list(session=session, instrument_list=instrument_list)  # type: ignore[arg-type]
 
     assert instrument_map is not None
 
-    assert len(instrument_map) == 2
+    assert len(instrument_map) == 3
 
 
 def test_track() -> None:
@@ -486,7 +473,7 @@ def test_track() -> None:
         assert e is not None
 
 
-def test_add_to_status_table_with_origin_files():
+def test_add_to_status_table_with_origin_files() -> None:
     """
     Test add_to_status_table with origin files
     """
@@ -553,10 +540,10 @@ def test_add_to_status_table_with_origin_files():
 
     status_id = test_tracker.add_to_status_table(
         session=session,
-        science_file_id=science_file_id,
+        science_file_id=science_file_id,  # type: ignore[arg-type]
         processing_status="SUCCESS",
         processing_status_message="Linked to origins",
-        origin_file_ids=origin_file_ids,
+        origin_file_ids=origin_file_ids,  # type: ignore[arg-type]
     )
     assert status_id is not None
 

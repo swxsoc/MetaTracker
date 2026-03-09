@@ -2,7 +2,7 @@ from metatracker.database import check_connection, create_engine, create_session
 
 
 # Test create database engine
-def test_create_engine():
+def test_create_engine() -> None:
     # Create engine
     engine = create_engine("sqlite://")
 
@@ -11,7 +11,7 @@ def test_create_engine():
 
 
 # Test create database session
-def test_create_session():
+def test_create_session() -> None:
     # Create engine
     engine = create_engine("sqlite://")
 
@@ -23,7 +23,7 @@ def test_create_session():
 
 
 # Test check connection
-def test_check_connection():
+def test_check_connection() -> None:
     # Create engine
     engine = create_engine("sqlite://")
 

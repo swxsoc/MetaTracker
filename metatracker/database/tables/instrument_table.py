@@ -5,6 +5,8 @@
 #   mode: str
 #   reference_timestamp: datetime
 
+from typing import Any
+
 from sqlalchemy import Column, Integer, String
 
 from metatracker import CONFIGURATION
@@ -12,7 +14,7 @@ from metatracker import CONFIGURATION
 from . import base_table as Base
 
 
-class InstrumentTable(Base.Base):
+class InstrumentTable(Base.Base):  # type: ignore
     # Name Of Table
     __tablename__ = f"{CONFIGURATION.mission_name}_instrument"
 
@@ -32,16 +34,16 @@ class InstrumentTable(Base.Base):
         """
         Constructor for Instrument Table
         """
-        self.instrument_id = instrument_id
-        self.full_name = full_name
-        self.short_name = short_name
-        self.description = description
+        self.instrument_id = instrument_id  # type: ignore[assignment]
+        self.full_name = full_name  # type: ignore[assignment]
+        self.short_name = short_name  # type: ignore[assignment]
+        self.description = description  # type: ignore[assignment]
 
     def __repr__(self) -> str:
-        return super().__repr__()
+        return super().__repr__()  # type: ignore[no-any-return]
 
 
-def return_class() -> type:
+def return_class() -> Any:
     """
     Return Class
     """
