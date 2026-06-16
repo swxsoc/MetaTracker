@@ -17,7 +17,7 @@ packages = [
 python = ">=3.10"
 sqlalchemy = ">=2.0.0,<3.0.0"
 tenacity = "9.1.2"
-swxsoc = { git = "https://github.com/swxsoc/swxsoc.git" }
+swxsoc = { git = "https://github.com/swxsoc/swxsoc.git", branch = "main" }
 
 
 [tool.poetry.group.dev.dependencies]
