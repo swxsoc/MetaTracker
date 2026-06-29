@@ -9,15 +9,49 @@ from swxsoc import config as swxsoc_config  # type: ignore
 
 # Default Database Host
 DEFAULT_DB_HOST = "sqlite:///"
-DEFAULT_FILE_LEVELS = [
-    {"description": "RAW File", "full_name": "RAW", "short_name": "raw"},
-    {"description": "Level 0 File", "full_name": "Level 0", "short_name": "l0"},
-    {"description": "Level 1 File", "full_name": "Level 1", "short_name": "l1"},
-    {"description": "Quick Look File", "full_name": "Quick Look", "short_name": "ql"},
-    {"description": "Level 2 File", "full_name": "Level 2", "short_name": "l2"},
-    {"description": "Level 3 File", "full_name": "Level 3", "short_name": "l3"},
-    {"description": "Level 4 File", "full_name": "Level 4", "short_name": "l4"},
-]
+DEFAULT_FILE_LEVELS = {
+    "raw": {
+        "description": "RAW File",
+        "full_name": "RAW",
+        "short_name": "raw",
+    },
+    "l0": {
+        "description": "Level 0 File",
+        "full_name": "Level 0",
+        "short_name": "l0",
+    },
+    "l1": {
+        "description": "Level 1 File",
+        "full_name": "Level 1",
+        "short_name": "l1",
+    },
+    "l1c": {
+        "description": "Level 1C File",
+        "full_name": "Level 1C",
+        "short_name": "l1c",
+    },
+    "ql": {
+        "description": "Quick Look File",
+        "full_name": "Quick Look",
+        "short_name": "ql",
+    },
+    "l2": {
+        "description": "Level 2 File",
+        "full_name": "Level 2",
+        "short_name": "l2",
+    },
+    "l3": {
+        "description": "Level 3 File",
+        "full_name": "Level 3",
+        "short_name": "l3",
+    },
+    "l4": {
+        "description": "Level 4 File",
+        "full_name": "Level 4",
+        "short_name": "l4",
+    },
+}
+
 
 # fmt: off
 DEFAULT_FILE_TYPES = [
@@ -120,7 +154,7 @@ class MetaTrackerConfiguration:
         if "db_host" not in config:
             config["db_host"] = DEFAULT_DB_HOST
         if "file_levels" not in config:
-            config["file_levels"] = DEFAULT_FILE_LEVELS
+            config["file_levels"] = list(DEFAULT_FILE_LEVELS.values())
         if "file_types" not in config:
             config["file_types"] = DEFAULT_FILE_TYPES
 
@@ -182,8 +216,19 @@ class MetaTrackerConfiguration:
                 instrument_configurations.append(config)
                 config_id += 1
 
+        # Configure valid data levels to track
+        file_levels = []
+        for level in mission_config["valid_data_levels"]:
+            if level in DEFAULT_FILE_LEVELS:
+                file_levels.append(DEFAULT_FILE_LEVELS[level])
+            else:
+                raise ValueError(
+                    f"Invalid data level '{level}' found in SWxSOC mission configuration, but not in MetaTracker defaults."
+                )
+
         metatracker_config = {
             "mission_name": mission_config["mission_name"],
+            "file_levels": file_levels,
             "instruments": instruments_list,
             "instrument_configurations": instrument_configurations,
         }
