@@ -1,15 +1,15 @@
 # MetaTracker
 
 
-![GitHub issues](https://img.shields.io/github/issues/HERMES-SOC/MetaTracker)
-[![Build status](https://img.shields.io/github/actions/workflow/status/HERMES-SOC/MetaTracker/main.yml?branch=main)](https://github.com/HERMES-SOC/MetaTracker/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/HERMES-SOC/MetaTracker/branch/main/graph/badge.svg)](https://codecov.io/gh/HERMES-SOC/MetaTracker)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/HERMES-SOC/MetaTracker)](https://img.shields.io/github/commit-activity/m/HERMES-SOC/MetaTracker)
-[![License](https://img.shields.io/github/license/HERMES-SOC/MetaTracker)](https://img.shields.io/github/license/HERMES-SOC/MetaTracker)
+![GitHub issues](https://img.shields.io/github/issues/swxsoc/MetaTracker)
+[![Build status](https://img.shields.io/github/actions/workflow/status/swxsoc/MetaTracker/main.yml?branch=main)](https://github.com/swxsoc/MetaTracker/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/swxsoc/MetaTracker/branch/main/graph/badge.svg)](https://codecov.io/gh/swxsoc/MetaTracker)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/swxsoc/MetaTracker)](https://img.shields.io/github/commit-activity/m/swxsoc/MetaTracker)
+[![License](https://img.shields.io/github/license/swxsoc/MetaTracker)](https://img.shields.io/github/license/swxsoc/MetaTracker)
 
 This is a python package that helps keep track of both Raw Binary and CDF Files in a Relational Database.
 
-- **Github repository**: <https://github.com/HERMES-SOC/MetaTracker/>
+- **Github repository**: <https://github.com/swxsoc/MetaTracker/>
 
 ## Features
 - Track both Raw Binary and CDF Files
@@ -28,10 +28,10 @@ To install the library and its dependencies, follow these steps:
 1. Install with dependency manager of your choice:
     ```bash
     # Install with pip
-    pip install git+https://github.com/HERMES-SOC/MetaTracker.git
+    pip install git+https://github.com/swxsoc/MetaTracker.git
 
     # Install with poetry
-    poetry add git+https://github.com/HERMES-SOC/MetaTracker.git
+    poetry add git+https://github.com/swxsoc/MetaTracker.git
     ```
 
 
@@ -98,7 +98,7 @@ This project makes use of [Poetry](https://python-poetry.org/) to manage depende
 1. Clone the repository
 
     ```bash
-    git clone https://github.com/HERMES-SOC/MetaTracker.git
+    git clone https://github.com/swxsoc/MetaTracker.git
 
     cd MetaTracker
     ```
