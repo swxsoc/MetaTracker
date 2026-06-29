@@ -216,7 +216,7 @@ class MetaTrackerConfiguration:
                 instrument_configurations.append(config)
                 config_id += 1
 
-        # Configure Valida Data Levels to Track
+        # Configure valid data levels to track
         file_levels = []
         for level in mission_config["valid_data_levels"]:
             if level in DEFAULT_FILE_LEVELS:
