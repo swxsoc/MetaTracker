@@ -1,3 +1,5 @@
+This package has had all functionality migrated to the [swxsoc](https://github.com/swxsoc/swxsoc) package. 
+
 # MetaTracker
 
 
